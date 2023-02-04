@@ -18,9 +18,8 @@ static const char* vShader = R"(
 layout (location = 0) in vec3 pos ;															
 
 void main ()									
-
 {												
-	gl_position = vec4 (pos.x,pos.y,pos.z,1.0); 										
+	gl_Position = vec4 (pos.x,pos.y,pos.z,1.0); 										
 
 })";
 
@@ -32,11 +31,11 @@ out vec4 FragColor;
 
 void main()
 {
-	FragColor = vec4 (0.5,0.5,0.0,1.0);
+	FragColor = vec4 (0.99,0.62,0.007,1.0);
 })";
 
 
-
+//this funtion creates triangle
 void CreateTriangle()
 {
 	// vertex for 
@@ -72,73 +71,59 @@ void CreateTriangle()
 	glBindVertexArray(0);
 	
 }
+
+
 void AddShader(GLuint theProgram , const char* ShaderCode , GLenum ShadeType)
 {
-	GLuint theShader =glCreateShader(ShadeType);
+	GLuint theShader = glCreateShader(ShadeType);
 	const GLchar* theCode[1];
 	theCode[0]=ShaderCode;
 
 	GLint codeLength [1];
 	codeLength[0]=strlen(ShaderCode);
-
+	
 	glShaderSource(theShader,1,theCode,codeLength);
 	glCompileShader(theShader);
 
-	GLint result = 0;
-	GLchar eLog[1024] ={0};
-	glGetProgramiv(Shader,GL_VALIDATE_STATUS,&result);
+	GLint result =0;
+	GLchar eLog [1024] = {0};
+	glGetShaderiv(theShader,GL_COMPILE_STATUS,&result);
 	if(!result)
 	{
-		glGetShaderInfoLog(Shader,sizeof(eLog),NULL,eLog);
-		printf("ERROR Comiling %d Shader :&s  \n" ,ShadeType,eLog);
+		glGetShaderInfoLog(theShader,sizeof(eLog),NULL,eLog);
+		printf("Error Compiling the %d shader  :%s \n",ShadeType,eLog);
+		return;
 	}
-
-	glAttachShader(theProgram,theShader);
+	glAttachShader(theProgram  ,theShader );
 }
 void CompileShader()
 {
-
-	 Shader= glCreateProgram();
+	Shader= glCreateProgram();
 	if(!Shader)
 	{
 		printf("Error Creating Shader Program");
-		return;
 	}
-
-	/*GLuint VertexShader , FragmentShader;
-	GLint codeLength [1];
-	codeLength[0]=strlen(vShader);
-	VertexShader= glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(VertexShader,1,&vShader,codeLength);
-	glCompileShader(VertexShader);
-	glAttachShader(Shader,VertexShader);
-
-	codeLength[0]=strlen(fShader);
-	FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(FragmentShader,1,&fShader,codeLength);
-	glCompileShader(FragmentShader);
-	glAttachShader(Shader,FragmentShader);*/
-	
 	AddShader(Shader,vShader,GL_VERTEX_SHADER);
 	AddShader(Shader,fShader,GL_FRAGMENT_SHADER);
-	GLint result = 0;
-	GLchar eLog[1024] ={0};
 
+	GLint result =0;
+	GLchar eLog [1024] = {0};
 	glLinkProgram(Shader);
-/*	glGetProgramiv(Shader,GL_LINK_STATUS,&result);
+	glGetProgramiv(Shader,GL_LINK_STATUS,&result);
 	if(!result)
 	{
 		glGetProgramInfoLog(Shader,sizeof(eLog),NULL,eLog);
-		printf("ERROR lINKING pROGRAM : %S \n" ,eLog);
-			
+		printf("Error Linking Program :%s \n",eLog);
+		return;
 	}
 	glValidateProgram(Shader);
 	glGetProgramiv(Shader,GL_VALIDATE_STATUS,&result);
 	if(!result)
 	{
 		glGetProgramInfoLog(Shader,sizeof(eLog),NULL,eLog);
-		printf("ERROR VALIDATING pROGRAM : %S \n" ,eLog);
-	}*/
+		printf("Error Validating Program :%s \n",eLog);
+		return;
+	}
 	
 }
 
@@ -152,7 +137,7 @@ int main()
 		return 1;
 	}
 
-	//SETUP WINDOW PREOPERTIES
+	//SETUP WINDOW PROPERTIES
 
 	//OPENGL VERSION
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR ,3);
@@ -202,16 +187,16 @@ int main()
 
 		
 		//clear window
-		glClearColor(0.1f,0.6f,0.8f,1.0f);
+		glClearColor(0.71,0.72,0.84,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(Shader);
-
 		glBindVertexArray(VAO);
 
 		glDrawArrays(GL_TRIANGLES,0,3);
-		glBindVertexArray(0);
 
+		
+		glBindVertexArray(0);
 		glUseProgram(0);
 		
 		glfwSwapBuffers(MainWindow);
