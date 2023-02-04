@@ -2,24 +2,31 @@
 
 #include<GL\glew.h>
 #include<GLFW/glfw3.h>
+#include<cmath>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
 
-GLuint VAO , VBO, Shader ;
+GLuint VAO , VBO, Shader , uniformXMove ;
 const GLint WIDTH = 1280 ,HEIGHT = 720;
+
+bool direction =true;
+float triOfset =0.0f;
+float triMaxOffset =0.7;
+float triIncrement=0.0005f;
+
 
 //vertex shader source for vertex
 static const char* vShader = R"(					
 
 #version 330									
 layout (location = 0) in vec3 pos ;															
-
+uniform float xMove;
 void main ()									
 {												
-	gl_Position = vec4 (pos.x,pos.y,pos.z,1.0); 										
+	gl_Position = vec4 (pos.x+xMove,pos.y,pos.z,1.0); 										
 
 })";
 
@@ -124,6 +131,8 @@ void CompileShader()
 		printf("Error Validating Program :%s \n",eLog);
 		return;
 	}
+
+	uniformXMove =glGetUniformLocation(Shader , "xMove");
 	
 }
 
@@ -185,12 +194,27 @@ int main()
 		//get and handle user input  events (like mouse movement resize window)
 		glfwPollEvents();
 
+
+		if(direction)
+		{
+			triOfset+=triIncrement;
+		}
+		else
+		{
+			triOfset-=triIncrement;
+		}
+
+		if(abs(triOfset)>=triMaxOffset)
+		{
+			direction=!direction;
+		}
 		
 		//clear window
 		glClearColor(0.71,0.72,0.84,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(Shader);
+		glUniform1f(uniformXMove,triOfset);
 		glBindVertexArray(VAO);
 
 		glDrawArrays(GL_TRIANGLES,0,3);
