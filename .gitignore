@@ -3,3 +3,6 @@ Debug/
 ProjectGL.vcxproj
 ProjectGL.vcxproj.filters
 ProjectGL.vcxproj.user
+.idea/
+.vs/
+ProjectGL.sln

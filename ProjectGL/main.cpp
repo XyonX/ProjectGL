@@ -3,13 +3,18 @@
 #include<GL\glew.h>
 #include<GLFW/glfw3.h>
 #include<cmath>
+#include<glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
 
-GLuint VAO , VBO, Shader , uniformXMove ;
+GLuint VAO , VBO, Shader  ;
+GLint	uniformModel , valueUniform;
+const float toRadians = 3.14159265f / 180.0f; ;
 const GLint WIDTH = 1280 ,HEIGHT = 720;
 
 bool direction =true;
@@ -23,10 +28,11 @@ static const char* vShader = R"(
 
 #version 330									
 layout (location = 0) in vec3 pos ;															
-uniform float xMove;
+uniform mat4 model;
+uniform float value ;
 void main ()									
 {												
-	gl_Position = vec4 (pos.x+xMove,pos.y,pos.z,1.0); 										
+	gl_Position =   vec4 (pos.x,pos.y,pos.z,1.0); 										
 
 })";
 
@@ -48,9 +54,12 @@ void CreateTriangle()
 	// vertex for 
 	GLfloat vertices[]=
 		{
-			-0.5,-0.5,0.0,
+			/*-0.5,-0.5,0.0,
 			0.5,-0.5,0.0,
-			0.0,1.0,0.0,
+			0.0,0.5,0.0,*/
+		-1.0f,-1.0f,0.0f,
+		1.0f,-1.0f,0.0f,
+		0.0f,1.0f,0.0f
 		};
 	//GENERATING VERTEX ARRAY OBJECT (VAO)
 	// VAO holds information about how vertex data is stored in memory.
@@ -79,7 +88,6 @@ void CreateTriangle()
 	
 }
 
-
 void AddShader(GLuint theProgram , const char* ShaderCode , GLenum ShadeType)
 {
 	GLuint theShader = glCreateShader(ShadeType);
@@ -103,6 +111,7 @@ void AddShader(GLuint theProgram , const char* ShaderCode , GLenum ShadeType)
 	}
 	glAttachShader(theProgram  ,theShader );
 }
+
 void CompileShader()
 {
 	Shader= glCreateProgram();
@@ -132,7 +141,8 @@ void CompileShader()
 		return;
 	}
 
-	uniformXMove =glGetUniformLocation(Shader , "xMove");
+	uniformModel =glGetUniformLocation(Shader , "model");
+	valueUniform=glGetUniformLocation(Shader,"value");
 	
 }
 
@@ -210,11 +220,23 @@ int main()
 		}
 		
 		//clear window
-		glClearColor(0.71,0.72,0.84,1.0f);
+		//glClearColor(0.71,0.72,0.84,1.0f);
+		glClearColor(0.0,0.0,0.0,1.0f);
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(Shader);
-		glUniform1f(uniformXMove,triOfset);
+
+		// thius is a diagonal matrix which will act as base axis and upon will be applied transformation
+		glm::mat4 model ;
+		//model = glm::translate(model,glm::vec3(triOfset,0,0));
+		//model = glm::rotate(model,45*toRadians,glm::vec3(0.0f,0.0f,1.0f));
+		model = glm::scale(model,glm::vec3(2.0f,2.0f,1.0f));
+		
+		//glUniform1f(uniformXMove,triOfset);
+		//glUniformMatrix4fv(uniformModel,1,GL_FALSE,glm::value_ptr(model));
+		glUniformMatrix4fv(uniformModel,1,GL_FALSE,glm::value_ptr(model));
+		glUniform1f(valueUniform,10.0f);
 		glBindVertexArray(VAO);
 
 		glDrawArrays(GL_TRIANGLES,0,3);

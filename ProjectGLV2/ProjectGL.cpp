@@ -9,6 +9,7 @@
 #include"VAO.h"
 #include"VBO.h"
 #include"EBO.h"
+#include"Texture.h"
 
 
 
@@ -64,13 +65,14 @@ int main ()
     ///
     ///
     ///
-    ///setting up Vertices and indices
+    ///setting up Vertices and indices 
     GLfloat vertices [] =
   {
+        //COORDINATE        //COLOR         //TEXTURE COORDINATE    
         -0.5f,-0.5f,0.0f,   1.0f,0.0f,0.0f, 0.0f,0.0f,
-        -0.5f,0.5f,0.0f,    0.0f,1.0f,0.0f, 0.0f,5.0f,
-        0.5f,0.5f,0.0f,     0.0f,0.0f,1.0f, 5.0f,5.0f,
-        0.5f,-0.5f,0.0f,    1.0f,1.0f,0.0f , 5.0f,0.0f
+        -0.5f,0.5f,0.0f,    0.0f,1.0f,0.0f, 0.0f,1.0f,
+        0.5f,0.5f,0.0f,     0.0f,0.0f,1.0f, 1.0f,1.0f,
+        0.5f,-0.5f,0.0f,    1.0f,1.0f,0.0f , 1.0f,0.0f
     };
     GLuint Indices []=
     {
@@ -94,57 +96,41 @@ int main ()
     VBO1.UnBind();
     EBO1.UnBind();
 
-    
-
     ///
     ///
-    ///
-    //Setting up image dat
+    ///CREATING SHADER 
     Shader Shader1("default.vert","default.frag");
+
+    //getting the uniform
+    // Gets ID of uniform called "scale"
+    GLuint uniID = glGetUniformLocation(Shader1.ID, "scale");
+
+
+    const char * Image = "Resources/xoro.jpg";
+    Texture Texture01(Image,GL_TEXTURE_2D,GL_TEXTURE0,GL_RGB,GL_UNSIGNED_INT);
+    Texture01.texUnit(Shader1,"tex0",0);
+
     
-    int HeightImg , WidthImg ,NumColCh;
-
-    // Loading the texture in a char
-    unsigned char*ImageChar = stbi_load("Resources/xoro.jpg",&WidthImg,&HeightImg,&NumColCh,0);
-    stbi_set_flip_vertically_on_load(true);
+   
 
     ///
-    ///
-    ///
-    //Creating and setting up texture
-    GLuint Texture ;
-    // GENERATING TEXTURE 
-    glGenTextures(1,&Texture);
-    // ACTIVATING TEXTURE
-    glActiveTexture(GL_TEXTURE0);
-    // BINDING WITH ACTIVE TEXTURE
-    glBindTexture(GL_TEXTURE_2D,Texture);
-    // SETTING TEXTURE SETTING HOW IT SHOULD APPEAR//HERE MODIFYING MIN FILTER// DECIDES PIXELATED OR BLURRY
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-    // SETTING TEXTURE SETTING HOW IT SHOULD APPEAR//HERE MODIFYING MIN FILTER// DECIDES PIXELATED OR BLURRY
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-
-    // SETTING TEXTURE SETTING HOW IT SHOULD APPEAR//HERE MODIFYING MAG FILTER// DECIDES HOW TEXTURE WILL REPEAT
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_MIRRORED_REPEAT);
-
-    // GEBNERAte texture image 
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,WidthImg,HeightImg,0,GL_RGB,GL_UNSIGNED_BYTE,ImageChar);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(ImageChar);
-    glBindTexture(GL_TEXTURE_2D,0);
-    
-    GLuint tex0Uni = glGetUniformLocation(Shader1.ID,"tex0");
+    ///Activating Shader
     Shader1.Activate();
-    glUniform1i(tex0Uni,0);
-    // looping  until we press the x mark on the window 
+    
+    // STARTING OF MAIN PROGRAM LOOP
     while (!glfwWindowShouldClose(Window))
     {
+        // Specify the color of the background
         glClearColor(0.8f,0.966f,0.98f,1.f);
+        // Clean the back buffer and assign the new color to it
         glClear(GL_COLOR_BUFFER_BIT);
+        // Tell OpenGL which Shader Program we want to use
         Shader1.Activate();
-        glUniform1f(tex0Uni,0.5f);
-        glBindTexture(GL_TEXTURE_2D,Texture);
+        // Assigns a value to the uniform; NOTE: Must always be done after activating the Shader Program
+        glUniform1f(uniID,0.5f);
+        // Binds texture so that is appears in rendering
+        Texture01.Bind();
+        // Bind the VAO so OpenGL knows to use it
         VAO1.Bind();
        // glDrawArrays(GL_TRIANGLES,0,3);
         glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,0);
@@ -155,7 +141,7 @@ int main ()
     VAO1.Delete();
     VBO1.Delete();
     EBO1.Delete();
-    glDeleteTextures(1,&Texture);
+    Texture01.Delete();
     
     // code executing here mean we press the cross button and we are ready to exit  and clean up
     glfwDestroyWindow(Window);
