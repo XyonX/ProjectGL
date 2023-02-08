@@ -49,7 +49,7 @@ Texture::Texture(const char* image, GLenum textype,GLenum slot, GLenum format, G
     glBindTexture(textype, 0);
 }
 
-void Texture::texUnit(Shader Shader, const char* uniform, GLuint unit)
+void Texture::texUnit(Shader& Shader, const char* uniform, GLuint unit)
 {
     ///
     ///Getting UNIFORM ID

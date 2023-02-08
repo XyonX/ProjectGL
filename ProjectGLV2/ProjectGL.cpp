@@ -3,6 +3,9 @@
 #include<GL/glew.h>
 #include<GLFW/glfw3.h>
 #include<stb_image.h>
+#include<glm/glm.hpp>
+#include<glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 
 #include"shaderClass.h"
@@ -11,8 +14,8 @@
 #include"EBO.h"
 #include"Texture.h"
 
-
-
+const unsigned int width =800 ;
+const unsigned int height = 800;
 int main ()
 {
     ///*********************************
@@ -25,7 +28,7 @@ int main ()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
-    GLFWwindow* Window = glfwCreateWindow(800,800,"GL_WINDOW ",NULL,NULL);
+    GLFWwindow* Window = glfwCreateWindow(width,height,"GL_WINDOW ",NULL,NULL);
 
     // cheaking wheather the window availalle or not 
     if(Window == NULL)
@@ -39,7 +42,7 @@ int main ()
     glfwMakeContextCurrent(Window);
     
     // setting the viewport to gl use 
-    glViewport(0,0,800,800);
+    glViewport(0,0,width,height);
     glClearColor(0.65f,0.11f,0.89f,1.f);
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(Window);
@@ -101,11 +104,14 @@ int main ()
     ///CREATING SHADER 
     Shader Shader1("default.vert","default.frag");
 
+    ///
+    ///
     //getting the uniform
     // Gets ID of uniform called "scale"
     GLuint uniID = glGetUniformLocation(Shader1.ID, "scale");
 
 
+    //setting up texture
     const char * Image = "Resources/xoro.jpg";
     Texture Texture01(Image,GL_TEXTURE_2D,GL_TEXTURE0,GL_RGB,GL_UNSIGNED_INT);
     Texture01.texUnit(Shader1,"tex0",0);
@@ -126,6 +132,24 @@ int main ()
         glClear(GL_COLOR_BUFFER_BIT);
         // Tell OpenGL which Shader Program we want to use
         Shader1.Activate();
+
+        glm::mat4 model =glm::mat4(1.0);
+        glm::mat4 view = glm::mat4(1.0);
+        glm::mat4 proj = glm::mat4(1.0);
+
+        int modellocatin = glGetUniformLocation(Shader1.ID,"model");
+        glUniformMatrix4fv(modellocatin,1,GL_FALSE,glm::value_ptr(model));
+        int viewlocatin = glGetUniformLocation(Shader1.ID,"view");
+        glUniformMatrix4fv(viewlocatin,1,GL_FALSE,glm::value_ptr(model));
+        int projlocatin = glGetUniformLocation(Shader1.ID,"proj");
+        glUniformMatrix4fv(projlocatin,1,GL_FALSE,glm::value_ptr(model));
+
+        view = glm::translate(view,glm::vec3(0.0f,-0.5f,2.0f));
+        proj = glm::perspective(glm::radians(45.0f),float(width/height),0.1f,100.0f);
+
+
+        
+        
         // Assigns a value to the uniform; NOTE: Must always be done after activating the Shader Program
         glUniform1f(uniID,0.5f);
         // Binds texture so that is appears in rendering
